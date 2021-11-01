@@ -4,34 +4,29 @@
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 
-using Eigen::VectorXd;
+#include <fstream>
 
 // Evaluate a polynomial.
-double polyeval(const VectorXd &coeffs, double x);
+double polyeval(const Eigen::VectorXd &coeffs, double x);
 // Fit a polynomial.
-VectorXd polyfit(const VectorXd &xvals, const VectorXd &yvals, int order);
+Eigen::VectorXd polyfit(const Eigen::VectorXd &xvals, const Eigen::VectorXd &yvals, int order);
+
+//Create CSV file to plot with Plotjuggler
+void to_csv(const Eigen::VectorXd &xvals, const Eigen::VectorXd &yvals);
 
 int main() {
-  VectorXd xvals(6);
-  VectorXd yvals(6);
+  Eigen::VectorXd xvals(6);
+  Eigen::VectorXd yvals(6);
   // x waypoint coordinates
   xvals << 9.261977, -2.06803, -19.6663, -36.868, -51.6263, -66.3482;
   // y waypoint coordinates
   yvals << 5.17, -2.25, -15.306, -29.46, -42.85, -57.6116;
 
-  /**
-   * TODO: use `polyfit` to fit a third order polynomial to the (x, y)
-   *   coordinates.
-   * Hint: call Eigen::VectorXd polyfit() and pass xvals, yvals, and the 
-   *   polynomial degree/order
-   */
-  // YOUR CODE HERE
+  Eigen::VectorXd fit_curve = polyfit(xvals, yvals, 3);
 
   for (double x = 0; x <= 20; ++x) {
-    /**
-     * TODO: use `polyeval` to evaluate the x values.
-     */
-    std::cout << "YOUR CODE HERE" << std::endl; 
+
+    std::cout << polyeval(fit_curve, x) << std::endl; 
   }
 
   // Expected output
@@ -58,7 +53,7 @@ int main() {
   // 11.7925
 }
 
-double polyeval(const VectorXd &coeffs, double x) {
+double polyeval(const Eigen::VectorXd &coeffs, double x) {
   double result = 0.0;
   for (int i = 0; i < coeffs.size(); ++i) {
     result += coeffs[i] * pow(x, i);
@@ -68,7 +63,7 @@ double polyeval(const VectorXd &coeffs, double x) {
 
 // Adapted from:
 // https://github.com/JuliaMath/Polynomials.jl/blob/master/src/Polynomials.jl#L676-L716
-VectorXd polyfit(const VectorXd &xvals, const VectorXd &yvals, int order) {
+Eigen::VectorXd polyfit(const Eigen::VectorXd &xvals, const Eigen::VectorXd &yvals, int order) {
   assert(xvals.size() == yvals.size());
   assert(order >= 1 && order <= xvals.size() - 1);
 
@@ -88,4 +83,18 @@ VectorXd polyfit(const VectorXd &xvals, const VectorXd &yvals, int order) {
   auto result = Q.solve(yvals);
 
   return result;
+}
+
+void to_csv(const Eigen::VectorXd &xvals, const Eigen::VectorXd &yvals){
+  // Create an output filestream object
+  std::ofstream csv("polyfit.csv");
+  
+  // Send data to the stream
+  csv << "X, Y\n";
+  for (int i = 0; i < xvals.size(); ++i) {
+    csv << xvals(i) << ", " << yvals(i) << "\n";
+  }
+
+  // Close the file
+  csv.close();
 }
