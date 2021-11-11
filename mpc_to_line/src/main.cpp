@@ -1,4 +1,13 @@
+// #include "matplotlibcpp.h"
+
+// namespace plt = matplotlibcpp;
+// int main() {
+//     plt::plot({1,3,2,4});
+//     plt::show();
+// }
+
 #include <vector>
+#include <iostream>
 #include "Eigen-3.3/Eigen/QR"
 #include "helpers.h"
 #include "matplotlibcpp.h"
@@ -14,30 +23,26 @@ using std::vector;
 int main() {
   MPC mpc;
   int iters = 50;
-
   VectorXd ptsx(2);
   VectorXd ptsy(2);
   ptsx << -100, 100;
   ptsy << -1, -1;
 
-  /**
-   * TODO: fit a polynomial to the above x and y coordinates
-   */
-  auto coeffs = ? ;
+  // The polynomial is fitted to a straight line so a polynomial with
+  // order 1 is sufficient.
+  auto coeffs = polyfit(ptsx, ptsy, 1);
 
   // NOTE: free feel to play around with these
   double x = -1;
   double y = 10;
   double psi = 0;
   double v = 10;
-  /**
-   * TODO: calculate the cross track error
-   */
-  double cte = ? ;
-  /**
-   * TODO: calculate the orientation error
-   */
-  double epsi = ? ;
+  // The cross track error is calculated by evaluating at polynomial at x, f(x)
+  // and subtracting y.
+  double cte = polyeval(coeffs, x) - y;
+  // Due to the sign starting at 0, the orientation error is -f'(x).
+  // derivative of coeffs[0] + coeffs[1] * x -> coeffs[1]
+  double epsi = psi - atan(coeffs[1]);
 
   VectorXd state(6);
   state << x, y, psi, v, cte, epsi;
@@ -80,7 +85,7 @@ int main() {
 
   // Plot values
   // NOTE: feel free to play around with this.
-  // It's useful for debugging!
+  //It's useful for debugging!
   plt::subplot(3, 1, 1);
   plt::title("CTE");
   plt::plot(cte_vals);
